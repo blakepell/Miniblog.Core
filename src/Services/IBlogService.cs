@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Miniblog.Core.Models;
 
 namespace Miniblog.Core.Services
@@ -24,6 +25,9 @@ namespace Miniblog.Core.Services
         Task DeletePost(Post post);
 
         Task<string> SaveFile(byte[] bytes, string fileName, string suffix = null);
+
+        Task<FileResult> GetBackup();
+
     }
 
     public abstract class InMemoryBlogServiceBase : IBlogService
@@ -115,5 +119,11 @@ namespace Miniblog.Core.Services
         {
             return ContextAccessor.HttpContext?.User?.Identity.IsAuthenticated == true;
         }
+
+        public Task<FileResult> GetBackup()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

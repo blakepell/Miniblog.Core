@@ -218,5 +218,14 @@ namespace Miniblog.Core.Controllers
 
             return Redirect(post.GetEncodedLink() + "#comments");
         }
+
+        [Authorize]
+        [Route("/blog/backup")]
+        public async Task<IActionResult> Backup()
+        {
+            var backup = await _blog.GetBackup();
+            return backup;
+        }
+
     }
 }

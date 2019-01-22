@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Miniblog.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -16,16 +18,19 @@ namespace Miniblog.Core.Services
 {
     public class FileBlogService : IBlogService
     {
-        private const string POSTS = "Posts";
+        private const string POSTS = "posts";
         private const string FILES = "files";
+        private const string BACKUP = "backup";
 
         private readonly List<Post> _cache = new List<Post>();
         private readonly IHttpContextAccessor _contextAccessor;
         private readonly string _folder;
+        private readonly string _backupFolder;
 
         public FileBlogService(IHostingEnvironment env, IHttpContextAccessor contextAccessor)
         {
             _folder = Path.Combine(env.WebRootPath, POSTS);
+            _backupFolder = Path.Combine(env.WebRootPath, BACKUP);
             _contextAccessor = contextAccessor;
 
             Initialize();
@@ -180,6 +185,21 @@ namespace Miniblog.Core.Services
             }
 
             return $"/{POSTS}/{FILES}/{fileNameWithSuffix}";
+        }
+
+        public virtual Task<FileResult> GetBackup()
+        {
+            string outputFile = $"{_backupFolder}/backup.zip";
+
+            if (File.Exists(outputFile))
+            {
+                File.Delete(outputFile);
+            }
+
+            ZipFile.CreateFromDirectory(_folder, outputFile);
+
+            var pfr = new PhysicalFileResult(outputFile, "application/zip");
+            return Task.FromResult((FileResult)pfr);
         }
 
         private string GetFilePath(Post post)
