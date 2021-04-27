@@ -33,12 +33,12 @@ namespace Miniblog.Core.Services
             _backupFolder = Path.Combine(env.WebRootPath, BACKUP);
             _contextAccessor = contextAccessor;
 
-            Initialize();
+            this.Initialize();
         }
 
         public virtual Task<IEnumerable<Post>> GetPosts(int count, int skip = 0)
         {
-            bool isAdmin = IsAdmin();
+            bool isAdmin = this.IsAdmin();
 
             var posts = _cache
                 .Where(p => p.PubDate <= DateTime.UtcNow && (p.IsPublished || isAdmin))
@@ -50,7 +50,7 @@ namespace Miniblog.Core.Services
 
         public virtual Task<IEnumerable<Post>> GetPostsByCategory(string category)
         {
-            bool isAdmin = IsAdmin();
+            bool isAdmin = this.IsAdmin();
 
             var posts = from p in _cache
                         where p.PubDate <= DateTime.UtcNow && (p.IsPublished || isAdmin)
@@ -63,7 +63,7 @@ namespace Miniblog.Core.Services
         public virtual Task<Post> GetPostBySlug(string slug)
         {
             var post = _cache.FirstOrDefault(p => p.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
-            bool isAdmin = IsAdmin();
+            bool isAdmin = this.IsAdmin();
 
             if (post != null && post.PubDate <= DateTime.UtcNow && (post.IsPublished || isAdmin))
             {
@@ -76,7 +76,7 @@ namespace Miniblog.Core.Services
         public virtual Task<Post> GetPostById(string id)
         {
             var post = _cache.FirstOrDefault(p => p.ID.Equals(id, StringComparison.OrdinalIgnoreCase));
-            bool isAdmin = IsAdmin();
+            bool isAdmin = this.IsAdmin();
 
             if (post != null && post.PubDate <= DateTime.UtcNow && (post.IsPublished || isAdmin))
             {
@@ -88,7 +88,7 @@ namespace Miniblog.Core.Services
 
         public virtual Task<IEnumerable<string>> GetCategories()
         {
-            bool isAdmin = IsAdmin();
+            bool isAdmin = this.IsAdmin();
 
             var categories = _cache
                 .Where(p => p.IsPublished || isAdmin)
@@ -101,7 +101,7 @@ namespace Miniblog.Core.Services
 
         public async Task SavePost(Post post)
         {
-            string filePath = GetFilePath(post);
+            string filePath = this.GetFilePath(post);
             post.LastModified = DateTime.UtcNow;
 
             XDocument doc = new XDocument(
@@ -145,13 +145,13 @@ namespace Miniblog.Core.Services
             if (!_cache.Contains(post))
             {
                 _cache.Add(post);
-                SortCache();
+                this.SortCache();
             }
         }
 
         public Task DeletePost(Post post)
         {
-            string filePath = GetFilePath(post);
+            string filePath = this.GetFilePath(post);
 
             if (File.Exists(filePath))
             {
@@ -209,8 +209,8 @@ namespace Miniblog.Core.Services
 
         private void Initialize()
         {
-            LoadPosts();
-            SortCache();
+            this.LoadPosts();
+            this.SortCache();
         }
 
         private void LoadPosts()

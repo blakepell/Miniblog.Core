@@ -1,0 +1,26 @@
+﻿[
+  {
+    "outputFile": "wwwroot/css/_variables.css",
+    "inputFile": "wwwroot/css/_variables.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/abovethefold.css",
+    "inputFile": "wwwroot/css/abovethefold.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/admin.css",
+    "inputFile": "wwwroot/css/admin.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/belowthefold.css",
+    "inputFile": "wwwroot/css/belowthefold.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/comments.css",
+    "inputFile": "wwwroot/css/comments.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/login.css",
+    "inputFile": "wwwroot/css/login.scss"
+  }
+]

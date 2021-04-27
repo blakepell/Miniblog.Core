@@ -6,7 +6,7 @@ namespace Miniblog.Core.Controllers
     {
         public IActionResult Error()
         {
-            return View(Response.StatusCode);
+            return this.View(this.Response.StatusCode);
         }
 
         /// <summary>
@@ -14,7 +14,7 @@ namespace Miniblog.Core.Controllers
         /// </summary>
         public IActionResult Offline()
         {
-            return View();
+            return this.View();
         }
     }
 }

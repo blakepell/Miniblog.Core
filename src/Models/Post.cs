@@ -35,17 +35,17 @@ namespace Miniblog.Core.Models
 
         public string GetLink()
         {
-            return $"/blog/{Slug}/";
+            return $"/blog/{this.Slug}/";
         }
 
         public string GetEncodedLink()
         {
-            return $"/blog/{System.Net.WebUtility.UrlEncode(Slug)}/";
+            return $"/blog/{System.Net.WebUtility.UrlEncode(this.Slug)}/";
         }
 
         public bool AreCommentsOpen(int commentsCloseAfterDays)
         {
-            return PubDate.AddDays(commentsCloseAfterDays) >= DateTime.UtcNow;
+            return this.PubDate.AddDays(commentsCloseAfterDays) >= DateTime.UtcNow;
         }
 
         public static string CreateSlug(string title)
@@ -88,7 +88,7 @@ namespace Miniblog.Core.Models
 
         public string RenderContent()
         {
-            var result = Content;
+            var result = this.Content;
             if (!string.IsNullOrEmpty(result))
             {
                 // Set up lazy loading of images/iframes

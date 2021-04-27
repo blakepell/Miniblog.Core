@@ -1,0 +1,133 @@
+﻿.notloaded {
+  opacity: 0;
+  transform: scale(0.9); }
+
+.loaded {
+  background: none;
+  opacity: 1;
+  transform: scale(1);
+  transition: all 400ms ease-in; }
+  @media screen and (prefers-reduced-motion: reduce) {
+    .loaded {
+      transition: none; } }
+
+a:focus,
+a:active,
+input:focus,
+textarea:focus {
+  outline: 2px solid #25a6ff; }
+
+noscript p {
+  background-color: crimson;
+  line-height: 2em;
+  padding: 0 10px;
+  color: white;
+  font-size: .9em; }
+
+.video {
+  position: relative;
+  padding-bottom: 56.25%;
+  padding-top: 30px;
+  height: 0;
+  overflow: hidden; }
+  .video iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0; }
+
+.categories {
+  list-style: none;
+  display: inline;
+  padding: 0; }
+  .categories li {
+    display: inline-block; }
+    .categories li:not(:first-child):not(:last-child):after {
+      content: ", "; }
+
+.socialsharing {
+  text-align: center; }
+  .socialsharing a {
+    display: inline-block;
+    padding: .7em;
+    line-height: 0;
+    margin-bottom: 2em; }
+  .socialsharing path {
+    fill: gray; }
+  .socialsharing svg {
+    width: 24px;
+    height: 24px; }
+
+.pagination {
+  padding-bottom: 2em;
+  margin-top: 1em; }
+  .pagination a {
+    border: 1px solid #bbb;
+    background: #f1f1f1;
+    color: #222;
+    display: inline-block;
+    padding: 4px 15px;
+    text-decoration: none; }
+    .pagination a[rel=next] {
+      float: right; }
+    .pagination a:hover, .pagination a:focus {
+      background: #dfdfdf; }
+
+.sitefooter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #222;
+  color: white;
+  height: 150px;
+  font-size: .9em; }
+  .sitefooter .container {
+    margin: 1em auto; }
+  .sitefooter ul {
+    list-style: none;
+    padding: 0; }
+  .sitefooter li {
+    display: inline-block; }
+    .sitefooter li:not(:last-child):not(:first-child):before {
+      content: "\00A0| \00A0"; }
+    .sitefooter li:last-child {
+      float: right; }
+  .sitefooter a {
+    color: white; }
+  .sitefooter p {
+    position: absolute;
+    bottom: .5em;
+    left: 0;
+    text-align: center;
+    width: 100%;
+    font-size: .9em; }
+
+@media print {
+  @page {
+    margin: 2cm; }
+  body {
+    color: #000;
+    background: #fff;
+    font: 12pt/1.5 Calibri, serif;
+    -webkit-print-color-adjust: exact; }
+  nav, aside, footer, #comments, [data-src], .video {
+    display: none; }
+  article {
+    page-break-after: always; }
+  h1, h2, h3, h4, h5, h6, img {
+    page-break-after: avoid;
+    page-break-inside: avoid; }
+  blockquote, table, pre {
+    page-break-inside: avoid; }
+  ul, ol, dl {
+    page-break-before: avoid; }
+  .post pre {
+    background: none;
+    border: none;
+    box-shadow: none;
+    font-family: monospace; }
+  a[href^="http"]:after, a[href^="//"]:after {
+    content: " <" attr(href) "> "; } }

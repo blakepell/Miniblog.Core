@@ -56,8 +56,8 @@
 
     @section Preload {
         @* This lazy loads the stylesheet in a non-render blocking way *@
-        <link rel="preload" href="~/css/comments.scss" as="style" />
-        <noscript><link rel="stylesheet" href="~/css/comments.scss" /></noscript>
+        <link rel="preload" href="~/css/comments.css" as="style" />
+        <noscript><link rel="stylesheet" href="~/css/comments.css" /></noscript>
         @if (isCodePreview)
         {
             <link rel="preload" href="~/lib/prism/prism.scss" as="style" />
@@ -70,6 +70,6 @@
 {
     @section Scripts {
         <script src="~/js/admin.js" async defer></script>
-        <link rel="stylesheet" href="~/css/admin.scss" />
+        <link rel="stylesheet" href="~/css/admin.css" />
     }
 }

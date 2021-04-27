@@ -30,11 +30,11 @@ namespace Miniblog.Core.Controllers
         public async Task<IActionResult> Index([FromRoute]int page = 0)
         {
             var posts = await _blog.GetPosts(_settings.Value.PostsPerPage, _settings.Value.PostsPerPage * page);
-            ViewData["Title"] = _manifest.Name;
-            ViewData["Description"] = _manifest.Description;
-            ViewData["prev"] = $"/{page + 1}/";
-            ViewData["next"] = $"/{(page <= 1 ? null : page - 1 + "/")}";
-            return View("~/Views/Blog/Index.cshtml", posts);
+            this.ViewData["Title"] = _manifest.Name;
+            this.ViewData["Description"] = _manifest.Description;
+            this.ViewData["prev"] = $"/{page + 1}/";
+            this.ViewData["next"] = $"/{(page <= 1 ? null : page - 1 + "/")}";
+            return this.View("~/Views/Blog/Index.cshtml", posts);
         }
 
         [Route("/blog/category/{category}/{page:int?}")]
@@ -42,11 +42,11 @@ namespace Miniblog.Core.Controllers
         public async Task<IActionResult> Category(string category, int page = 0)
         {
             var posts = (await _blog.GetPostsByCategory(category)).Skip(_settings.Value.PostsPerPage * page).Take(_settings.Value.PostsPerPage);
-            ViewData["Title"] = _manifest.Name + " " + category;
-            ViewData["Description"] = $"Articles posted in the {category} category";
-            ViewData["prev"] = $"/blog/category/{category}/{page + 1}/";
-            ViewData["next"] = $"/blog/category/{category}/{(page <= 1 ? null : page - 1 + "/")}";
-            return View("~/Views/Blog/Index.cshtml", posts);
+            this.ViewData["Title"] = _manifest.Name + " " + category;
+            this.ViewData["Description"] = $"Articles posted in the {category} category";
+            this.ViewData["prev"] = $"/blog/category/{category}/{page + 1}/";
+            this.ViewData["next"] = $"/blog/category/{category}/{(page <= 1 ? null : page - 1 + "/")}";
+            return this.View("~/Views/Blog/Index.cshtml", posts);
         }
 
         // This is for redirecting potential existing URLs from the old Miniblog URL format
@@ -54,7 +54,7 @@ namespace Miniblog.Core.Controllers
         [HttpGet]
         public IActionResult Redirects(string slug)
         {
-            return LocalRedirectPermanent($"/blog/{slug}");
+            return this.LocalRedirectPermanent($"/blog/{slug}");
         }
 
         [Route("/blog/{slug?}")]
@@ -65,44 +65,44 @@ namespace Miniblog.Core.Controllers
 
             if (post != null)
             {
-                return View(post);
+                return this.View(post);
             }
 
-            return NotFound();
+            return this.NotFound();
         }
 
         [Route("/blog/edit/{id?}")]
         [HttpGet, Authorize]
         public async Task<IActionResult> Edit(string id)
         {
-            ViewData["AllCats"] = (await _blog.GetCategories()).ToList();
+            this.ViewData["AllCats"] = (await _blog.GetCategories()).ToList();
 
             if (string.IsNullOrEmpty(id))
             {
-                return View(new Post());
+                return this.View(new Post());
             }
 
             var post = await _blog.GetPostById(id);
 
             if (post != null)
             {
-                return View(post);
+                return this.View(post);
             }
 
-            return NotFound();
+            return this.NotFound();
         }
 
         [Route("/blog/{slug?}")]
         [HttpPost, Authorize, AutoValidateAntiforgeryToken]
         public async Task<IActionResult> UpdatePost(Post post)
         {
-            if (!ModelState.IsValid)
+            if (!this.ModelState.IsValid)
             {
-                return View("Edit", post);
+                return this.View("Edit", post);
             }
 
             var existing = await _blog.GetPostById(post.ID) ?? post;
-            string categories = Request.Form["categories"];
+            string categories = this.Request.Form["categories"];
 
             existing.Categories = categories.Split(",", StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim().ToLowerInvariant()).ToList();
             existing.Title = post.Title.Trim();
@@ -111,11 +111,11 @@ namespace Miniblog.Core.Controllers
             existing.Content = post.Content.Trim();
             existing.Excerpt = post.Excerpt.Trim();
 
-            await SaveFilesToDisk(existing);
+            await this.SaveFilesToDisk(existing);
 
             await _blog.SavePost(existing);
 
-            return Redirect(post.GetEncodedLink());
+            return this.Redirect(post.GetEncodedLink());
         }
 
         private async Task SaveFilesToDisk(Post post)
@@ -172,10 +172,10 @@ namespace Miniblog.Core.Controllers
             if (existing != null)
             {
                 await _blog.DeletePost(existing);
-                return Redirect("/");
+                return this.Redirect("/");
             }
 
-            return NotFound();
+            return this.NotFound();
         }
 
         [Route("/blog/comment/{postId}")]
@@ -184,30 +184,30 @@ namespace Miniblog.Core.Controllers
         {
             var post = await _blog.GetPostById(postId);
 
-            if (!ModelState.IsValid)
+            if (!this.ModelState.IsValid)
             {
-                return View("Post", post);
+                return this.View("Post", post);
             }
 
             if (post == null || !post.AreCommentsOpen(_settings.Value.CommentsCloseAfterDays))
             {
-                return NotFound();
+                return this.NotFound();
             }
 
-            comment.IsAdmin = User.Identity.IsAuthenticated;
+            comment.IsAdmin = this.User.Identity.IsAuthenticated;
             comment.Content = comment.Content.Trim();
             comment.Author = comment.Author.Trim();
             comment.Email = comment.Email.Trim();
 
             // the website form key should have been removed by javascript
             // unless the comment was posted by a spam robot
-            if (!Request.Form.ContainsKey("website"))
+            if (!this.Request.Form.ContainsKey("website"))
             {
                 post.Comments.Add(comment);
                 await _blog.SavePost(post);
             }
 
-            return Redirect(post.GetEncodedLink() + "#" + comment.ID);
+            return this.Redirect(post.GetEncodedLink() + "#" + comment.ID);
         }
 
         [Route("/blog/comment/{postId}/{commentId}")]
@@ -218,20 +218,20 @@ namespace Miniblog.Core.Controllers
 
             if (post == null)
             {
-                return NotFound();
+                return this.NotFound();
             }
 
             var comment = post.Comments.FirstOrDefault(c => c.ID.Equals(commentId, StringComparison.OrdinalIgnoreCase));
 
             if (comment == null)
             {
-                return NotFound();
+                return this.NotFound();
             }
 
             post.Comments.Remove(comment);
             await _blog.SavePost(post);
 
-            return Redirect(post.GetEncodedLink() + "#comments");
+            return this.Redirect(post.GetEncodedLink() + "#comments");
         }
 
         [Authorize]

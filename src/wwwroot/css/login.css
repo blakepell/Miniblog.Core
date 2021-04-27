@@ -1,0 +1,27 @@
+﻿#login {
+  width: 300px;
+  margin: 0 auto;
+  padding-bottom: 2em; }
+  #login fieldset {
+    border: 0; }
+  #login legend {
+    font-size: 1.2em;
+    font-weight: bold; }
+  #login input[type=text],
+  #login input[type=password] {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 3px 7px;
+    border: 1px solid gray;
+    font: inherit; }
+  #login input[type=submit] {
+    margin-top: 10px;
+    padding: 0 10px;
+    display: block;
+    font: inherit; }
+  #login .validation-summary-errors {
+    color: crimson; }
+    #login .validation-summary-errors ul {
+      list-style: none;
+      padding: 0; }

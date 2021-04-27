@@ -1,22 +1,20 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.IO.Compression;
+using System.Linq;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Miniblog.Core.Services;
 using WebEssentials.AspNetCore.OutputCaching;
-using WebMarkupMin.AspNetCore2;
-using WebMarkupMin.Core;
 using WilderMinds.MetaWeblog;
-
-using IWmmLogger = WebMarkupMin.Core.Loggers.ILogger;
 using MetaWeblogService = Miniblog.Core.Services.MetaWeblogService;
-using WmmNullLogger = WebMarkupMin.Core.Loggers.NullLogger;
 
 namespace Miniblog.Core
 {
@@ -24,7 +22,7 @@ namespace Miniblog.Core
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            this.Configuration = configuration;
         }
 
         public static void Main(string[] args)
@@ -32,22 +30,28 @@ namespace Miniblog.Core
             CreateWebHostBuilder(args).Build().Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        private static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
-                .UseKestrel(a => a.AddServerHeader = false);
+                .UseKestrel(a =>
+                {
+                    a.AddServerHeader = false;
+                    a.AllowSynchronousIO = true;
+                });
 
-        public IConfiguration Configuration { get; }
+        private IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        /// <summary>
+        /// This method gets called by the runtime. Use this method to add services to the container.
+        /// </summary>
+        /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddControllersWithViews();
 
             services.AddSingleton<IUserServices, BlogUserServices>();
             services.AddSingleton<IBlogService, FileBlogService>();
-            services.Configure<BlogSettings>(Configuration.GetSection("blog"));
+            services.Configure<BlogSettings>(this.Configuration.GetSection("blog"));
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddMetaWeblog<MetaWeblogService>();
 
@@ -75,31 +79,33 @@ namespace Miniblog.Core
                     options.LogoutPath = "/logout/";
                 });
 
-            // HTML minification (https://github.com/Taritsyn/WebMarkupMin)
-            services
-                .AddWebMarkupMin(options =>
-                {
-                    options.AllowMinificationInDevelopmentEnvironment = true;
-                    options.DisablePoweredByHttpHeaders = true;
-                })
-                .AddHtmlMinification(options =>
-                {
-                    options.MinificationSettings.RemoveOptionalEndTags = false;
-                    options.MinificationSettings.WhitespaceMinificationMode = WhitespaceMinificationMode.Safe;
-                });
-            services.AddSingleton<IWmmLogger, WmmNullLogger>(); // Used by HTML minifier
-
-            // Bundling, minification and Sass transpilation (https://github.com/ligershark/WebOptimizer)
-            services.AddWebOptimizer(pipeline =>
+            // Compress HTTP response
+            services.AddResponseCompression(options =>
             {
-                pipeline.MinifyJsFiles();
-                pipeline.CompileScssFiles()
-                        .InlineImages(1);
+                options.Providers.Add<BrotliCompressionProvider>();
+                options.Providers.Add<GzipCompressionProvider>();
+                options.EnableForHttps = true;
+                options.MimeTypes =
+                    ResponseCompressionDefaults.MimeTypes.Concat(
+                        new[] { "application/json" });
             });
+            services.Configure<BrotliCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Fastest;
+            });
+            services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Fastest;
+            });
+
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        /// <summary>
+        /// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="env"></param>
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -118,27 +124,28 @@ namespace Miniblog.Core
                 return next();
             });
 
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".scss"] = "text/css";
+
             app.UseStatusCodePagesWithReExecute("/Shared/Error");
-            app.UseWebOptimizer();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                ContentTypeProvider = provider
+            });
 
-            app.UseStaticFilesWithCache();
-
-            if (Configuration.GetValue<bool>("forcessl"))
+            if (this.Configuration.GetValue<bool>("forcessl"))
             {
                 app.UseHttpsRedirection();
             }
 
             app.UseMetaWeblog("/metaweblog");
             app.UseAuthentication();
-
             app.UseOutputCaching();
-            app.UseWebMarkupMin();
-
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Blog}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute("default", "{controller=Blog}/{action=Index}/{id?}");
             });
         }
     }

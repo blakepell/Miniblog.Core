@@ -34,7 +34,7 @@ namespace Miniblog.Core.Services
     {
         public InMemoryBlogServiceBase(IHttpContextAccessor contextAccessor)
         {
-            ContextAccessor = contextAccessor;
+            this.ContextAccessor = contextAccessor;
         }
 
         protected List<Post> Cache { get; set; }
@@ -42,9 +42,9 @@ namespace Miniblog.Core.Services
 
         public virtual Task<IEnumerable<Post>> GetPosts(int count, int skip = 0)
         {
-            bool isAdmin = IsAdmin();
+            bool isAdmin = this.IsAdmin();
 
-            var posts = Cache
+            var posts = this.Cache
                 .Where(p => p.PubDate <= DateTime.UtcNow && (p.IsPublished || isAdmin))
                 .Skip(skip)
                 .Take(count);
@@ -54,9 +54,9 @@ namespace Miniblog.Core.Services
 
         public virtual Task<IEnumerable<Post>> GetPostsByCategory(string category)
         {
-            bool isAdmin = IsAdmin();
+            bool isAdmin = this.IsAdmin();
 
-            var posts = from p in Cache
+            var posts = from p in this.Cache
                         where p.PubDate <= DateTime.UtcNow && (p.IsPublished || isAdmin)
                         where p.Categories.Contains(category, StringComparer.OrdinalIgnoreCase)
                         select p;
@@ -67,8 +67,8 @@ namespace Miniblog.Core.Services
 
         public virtual Task<Post> GetPostBySlug(string slug)
         {
-            var post = Cache.FirstOrDefault(p => p.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
-            bool isAdmin = IsAdmin();
+            var post = this.Cache.FirstOrDefault(p => p.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase));
+            bool isAdmin = this.IsAdmin();
 
             if (post != null && post.PubDate <= DateTime.UtcNow && (post.IsPublished || isAdmin))
             {
@@ -80,8 +80,8 @@ namespace Miniblog.Core.Services
 
         public virtual Task<Post> GetPostById(string id)
         {
-            var post = Cache.FirstOrDefault(p => p.ID.Equals(id, StringComparison.OrdinalIgnoreCase));
-            bool isAdmin = IsAdmin();
+            var post = this.Cache.FirstOrDefault(p => p.ID.Equals(id, StringComparison.OrdinalIgnoreCase));
+            bool isAdmin = this.IsAdmin();
 
             if (post != null && post.PubDate <= DateTime.UtcNow && (post.IsPublished || isAdmin))
             {
@@ -93,9 +93,9 @@ namespace Miniblog.Core.Services
 
         public virtual Task<IEnumerable<string>> GetCategories()
         {
-            bool isAdmin = IsAdmin();
+            bool isAdmin = this.IsAdmin();
 
-            var categories = Cache
+            var categories = this.Cache
                 .Where(p => p.IsPublished || isAdmin)
                 .SelectMany(post => post.Categories)
                 .Select(cat => cat.ToLowerInvariant())
@@ -112,12 +112,12 @@ namespace Miniblog.Core.Services
 
         protected void SortCache()
         {
-            Cache.Sort((p1, p2) => p2.PubDate.CompareTo(p1.PubDate));
+            this.Cache.Sort((p1, p2) => p2.PubDate.CompareTo(p1.PubDate));
         }
 
         protected bool IsAdmin()
         {
-            return ContextAccessor.HttpContext?.User?.Identity.IsAuthenticated == true;
+            return this.ContextAccessor.HttpContext?.User?.Identity.IsAuthenticated == true;
         }
 
         public Task<FileResult> GetBackup()

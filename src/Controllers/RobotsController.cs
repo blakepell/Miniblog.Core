@@ -30,7 +30,7 @@ namespace Miniblog.Core.Controllers
         [OutputCache(Profile = "default")]
         public string RobotsTxt()
         {
-            string host = Request.Scheme + "://" + Request.Host;
+            string host = this.Request.Scheme + "://" + this.Request.Host;
             var sb = new StringBuilder();
             sb.AppendLine("User-agent: *");
             sb.AppendLine("Disallow:");
@@ -42,11 +42,11 @@ namespace Miniblog.Core.Controllers
         [Route("/sitemap.xml")]
         public async Task SitemapXml()
         {
-            string host = Request.Scheme + "://" + Request.Host;
+            string host = this.Request.Scheme + "://" + this.Request.Host;
 
-            Response.ContentType = "application/xml";
+            this.Response.ContentType = "application/xml";
 
-            using (var xml = XmlWriter.Create(Response.Body, new XmlWriterSettings { Indent = true }))
+            using (var xml = XmlWriter.Create(this.Response.Body, new XmlWriterSettings { Indent = true }))
             {
                 xml.WriteStartDocument();
                 xml.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
@@ -70,12 +70,12 @@ namespace Miniblog.Core.Controllers
         [Route("/rsd.xml")]
         public void RsdXml()
         {
-            string host = Request.Scheme + "://" + Request.Host;
+            string host = this.Request.Scheme + "://" + this.Request.Host;
 
-            Response.ContentType = "application/xml";
-            Response.Headers["cache-control"] = "no-cache, no-store, must-revalidate";
+            this.Response.ContentType = "application/xml";
+            this.Response.Headers["cache-control"] = "no-cache, no-store, must-revalidate";
 
-            using (var xml = XmlWriter.Create(Response.Body, new XmlWriterSettings { Indent = true }))
+            using (var xml = XmlWriter.Create(this.Response.Body, new XmlWriterSettings { Indent = true }))
             {
                 xml.WriteStartDocument();
                 xml.WriteStartElement("rsd");
@@ -104,13 +104,13 @@ namespace Miniblog.Core.Controllers
         [Route("/feed/{type}")]
         public async Task Rss(string type)
         {
-            Response.ContentType = "application/xml";
-            string host = Request.Scheme + "://" + Request.Host;
+            this.Response.ContentType = "application/xml";
+            string host = this.Request.Scheme + "://" + this.Request.Host;
 
-            using (XmlWriter xmlWriter = XmlWriter.Create(Response.Body, new XmlWriterSettings() { Async = true, Indent = true, Encoding = new UTF8Encoding(false) }))
+            using (XmlWriter xmlWriter = XmlWriter.Create(this.Response.Body, new XmlWriterSettings() { Async = true, Indent = true, Encoding = new UTF8Encoding(false) }))
             {
                 var posts = await _blog.GetPosts(10);
-                var writer = await GetWriter(type, xmlWriter, posts.Max(p => p.PubDate));
+                var writer = await this.GetWriter(type, xmlWriter, posts.Max(p => p.PubDate));
 
                 foreach (Models.Post post in posts)
                 {
@@ -139,7 +139,7 @@ namespace Miniblog.Core.Controllers
 
         private async Task<ISyndicationFeedWriter> GetWriter(string type, XmlWriter xmlWriter, DateTime updated)
         {
-            string host = Request.Scheme + "://" + Request.Host + "/";
+            string host = this.Request.Scheme + "://" + this.Request.Host + "/";
 
             if (type.Equals("rss", StringComparison.OrdinalIgnoreCase))
             {
